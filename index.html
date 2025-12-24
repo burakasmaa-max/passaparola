@@ -7,121 +7,54 @@
     
     <link rel="icon" type="image/png" href="passaparola.png">
     <link rel="apple-touch-icon" href="passaparola.png">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Passaparola">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
-            touch-action: manipulation;
-        }
-        
-        body.splash-active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        body.game-active {
-            background: #f8f9fa;
-        }
-
-        /* AÇILIŞ EKRANI MOBİL OPTİMİZASYONU */
-        #splash-screen {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .splash-container {
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .logo-image {
-            width: 150px; /* Mobilde daha küçük logo */
-            height: auto;
-            margin-bottom: 30px;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
-        }
-
-        .welcome-text {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: rgba(255,255,255,0.9);
-            font-size: 1rem;
-            margin-bottom: 30px;
-        }
-
-        .themes-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Mobilde 2 sütun */
-            gap: 15px;
-        }
-
-        .theme-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .theme-icon { font-size: 2rem; }
-        .theme-name { font-size: 0.9rem; color: #2c3e50; font-weight: bold; }
-        .theme-description { display: none; } /* Mobilde yer kazanmak için açıklamayı gizledik */
-
-        /* OYUN ALANI ÖLÇEKLENDİRME (Daireyi sığdırmak için kritik kısım) */
-        #game-screen {
-            display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            padding-top: 20px;
+            background: #f0f2f5;
+            overflow-x: hidden;
         }
 
+        body.splash-active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        /* AÇILIŞ EKRANI */
+        #splash-screen { padding: 20px; text-align: center; width: 100%; }
+        .logo-image { width: 120px; margin-bottom: 20px; }
+        .themes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+        .theme-card { background: white; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        /* OYUN EKRANI */
+        #game-screen { display: none; width: 100%; flex-direction: column; align-items: center; padding: 10px; }
         #game-screen.active { display: flex; }
 
-        #theme-display {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #764ba2;
-            margin-bottom: 10px;
-        }
+        #theme-display { font-size: 1.2rem; font-weight: bold; color: #764ba2; margin: 10px 0; }
 
+        /* HARF DAİRESİ - MOBİL UYUMLU */
         #game-container {
             position: relative;
-            /* Dinamik boyutlandırma: Ekranın enine göre %90 genişlik */
             width: 90vw; 
             height: 90vw;
-            max-width: 500px;
-            max-height: 500px;
-            background: rgba(118, 75, 162, 0.05);
+            max-width: 380px;
+            max-height: 380px;
+            background: white;
             border-radius: 50%;
             margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         .letter-circle {
             position: absolute;
-            width: 30px; /* Mobilde daha küçük harf daireleri */
-            height: 30px;
+            width: 32px;
+            height: 32px;
             background-color: #dc143c;
             color: white;
             border-radius: 50%;
@@ -131,209 +64,187 @@
             font-weight: bold;
             font-size: 0.8rem;
             border: 2px solid #fff;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            z-index: 10;
         }
 
-        .letter-circle.active {
-            background-color: #ffd700;
-            color: #000;
-            transform: scale(1.4);
-            box-shadow: 0 0 15px #ffd700;
-        }
+        .letter-circle.active { background-color: #ffd700; color: #000; transform: scale(1.3); box-shadow: 0 0 15px #ffd700; }
+        .letter-circle.correct { background-color: #4caf50; }
 
-        .letter-circle.correct {
-            background-color: #4caf50;
-        }
-
-        /* ORTA PANEL (SORU VE CEVAP) */
+        /* MERKEZ PANEL */
         #center-display {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 70%;
+            width: 75%;
             text-align: center;
+            z-index: 5;
         }
 
-        #main-text {
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: #2c3e50;
-        }
-
+        #main-text { font-size: 1.1rem; font-weight: 800; color: #2c3e50; }
+        
         #question-text {
-            font-size: 0.95rem;
-            background: #fff;
+            font-size: 0.85rem;
+            color: #333;
+            background: #f9f9f9;
             padding: 10px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            line-height: 1.3;
-            max-height: 120px;
-            overflow-y: auto;
+            display: none;
+            line-height: 1.4;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
         }
 
         #answer-text {
-            font-size: 1.1rem;
+            font-size: 1rem;
+            font-weight: bold;
             color: #d32f2f;
-            margin-top: 10px;
-            font-weight: bold;
-            background: #fff;
-            padding: 5px;
-            border-radius: 5px;
-            border: 1px solid #d32f2f;
+            display: none;
         }
 
-        /* BUTON GRUBU MOBİL */
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 90%;
-            padding-bottom: 30px;
-        }
-
-        button {
-            padding: 12px;
-            font-size: 0.9rem;
-            border-radius: 25px;
-            border: none;
-            color: white;
-            font-weight: bold;
-        }
-
-        #btn-action { grid-column: span 2; background-color: #2196F3; font-size: 1.1rem; }
-        #btn-home { background-color: #9C27B0; }
-        #btn-reset { background-color: #FF9800; }
-        #btn-end { background-color: #F44336; grid-column: span 2; }
-
-        @media (min-width: 769px) {
-            /* Masaüstü için orijinal boyutlar burada korunabilir */
-            .letter-circle { width: 50px; height: 50px; font-size: 1.2rem; }
-            #question-text { font-size: 1.4rem; padding: 20px; }
-            #game-container { width: 600px; height: 600px; }
-        }
+        /* BUTONLAR */
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 95%; max-width: 400px; }
+        button { padding: 12px; border-radius: 20px; border: none; color: white; font-weight: bold; font-size: 0.9rem; }
+        #btn-action { grid-column: span 2; background: #2196F3; font-size: 1.1rem; }
+        #btn-home { background: #9C27B0; }
+        #btn-reset { background: #FF9800; }
+        #btn-end { background: #F44336; grid-column: span 2; }
     </style>
 </head>
 <body class="splash-active">
 
     <div id="splash-screen">
-        <div class="splash-container">
-            <div class="logo-container">
-                <img src="https://cdn.abacus.ai/images/fba8a2af-883d-416b-a167-442aedd02623.png" alt="Passaparola Logo" class="logo-image">
-            </div>
-            <h1 class="welcome-text">Passaparola</h1>
-            <p class="subtitle">Bir tema seçerek başlayın</p>
-
-            <div class="themes-grid">
-                <div class="theme-card" onclick="selectTheme('Medya Okuryazarlığı')"><span>📱</span><div class="theme-name">Medya Okuryazarlığı</div></div>
-                <div class="theme-card" onclick="selectTheme('Türkçe')"><span>📚</span><div class="theme-name">Türkçe</div></div>
-                <div class="theme-card" onclick="selectTheme('Atatürk ve Milli Mücadele')"><span>🇹🇷</span><div class="theme-name">Atatürk</div></div>
-                <div class="theme-card" onclick="selectTheme('Türkiye')"><span>🏛️</span><div class="theme-name">Türkiye</div></div>
-                <div class="theme-card" onclick="selectTheme('Tarih')"><span>⏳</span><div class="theme-name">Tarih</div></div>
-                <div class="theme-card" onclick="selectTheme('Dünya')"><span>🌍</span><div class="theme-name">Dünya</div></div>
-                <div class="theme-card" onclick="selectTheme('Oyunlar')"><span>🎮</span><div class="theme-name">Oyunlar</div></div>
-                <div class="theme-card" onclick="selectTheme('Genel Kültür')"><span>💡</span><div class="theme-name">Genel Kültür</div></div>
-            </div>
-        </div>
+        <h1 style="color:white; margin-bottom:10px;">Passaparola</h1>
+        <p style="color:white;">Bir tema seçin</p>
+        <div class="themes-grid" id="themes-grid"></div>
     </div>
 
     <div id="game-screen">
         <div id="theme-display"></div>
-        <div id="game-container"></div>
+        <div id="game-container">
+            <div id="center-display">
+                <div id="main-text">PASSAPAROLA</div>
+                <div id="question-text"></div>
+                <div id="answer-text"></div>
+            </div>
+        </div>
         <div class="button-group">
             <button id="btn-action" onclick="nextStep()">Oyuna Başla</button>
-            <button id="btn-home" onclick="returnToSplash()">Anasayfa</button>
-            <button id="btn-reset" onclick="resetGame()">Başa Dön</button>
-            <button id="btn-end" onclick="endGame()">Oyunu Bitir</button>
+            <button id="btn-home" onclick="location.reload()">Anasayfa</button>
+            <button id="btn-reset" onclick="resetGame()">Sıfırla</button>
+            <button id="btn-end" onclick="endGame()">Bitir</button>
         </div>
     </div>
 
     <script>
-        // Veritabanı senin orijinal veritabanınla aynı (Kısaltıldı ama senin kodunda tam olmalı)
-        const themeDatabase = { /* ...Senin Orijinal themeDatabase İçeriğin Buraya Gelecek... */ };
+        const themeDatabase = {
+            "Türkçe": [
+                { letter: "A", question: "İsmin eş anlamlısı nedir?", answer: "AD" },
+                { letter: "B", question: "Anlamca birbirine bağlı cümleler topluluğu?", answer: "BİRLEŞİK" },
+                { letter: "C", question: "Kelimelerin oluşturduğu anlamlı dizi?", answer: "CÜMLE" },
+                { letter: "D", question: "Dilin kurallarını inceleyen bilim?", answer: "DİLBİLGİSİ" }
+                // Diğer harfleri buraya eklemeye devam edebilirsiniz...
+            ],
+            "Genel Kültür": [
+                { letter: "A", question: "Türkiye'nin başkenti neresidir?", answer: "ANKARA" },
+                { letter: "B", question: "Dünyanın en büyük kıtası?", answer: "ASYA" }
+            ]
+        };
 
         let currentTheme = "";
         let data = [];
         let currentIndex = -1;
         let stepState = 0;
-        let isGameFinished = false;
-        let gameStarted = false;
 
-        const container = document.getElementById('game-container');
-        const actionBtn = document.getElementById('btn-action');
-        const circles = [];
+        // Temaları Listele
+        const grid = document.getElementById('themes-grid');
+        Object.keys(themeDatabase).forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'theme-card';
+            card.innerText = t;
+            card.onclick = () => selectTheme(t);
+            grid.appendChild(card);
+        });
 
-        function selectTheme(themeName) {
-            currentTheme = themeName;
-            data = themeDatabase[themeName];
+        function selectTheme(theme) {
+            currentTheme = theme;
+            data = themeDatabase[theme];
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('game-screen').classList.add('active');
-            document.getElementById('theme-display').innerText = `Tema: ${currentTheme}`;
-            document.body.className = 'game-active';
+            document.body.classList.remove('splash-active');
+            document.getElementById('theme-display').innerText = theme;
             createBoard();
-            gameStarted = true;
         }
 
         function createBoard() {
-            container.innerHTML = '<div id="center-display"><div id="main-text">PASSAPAROLA</div><div id="question-text" style="display:none"></div><div id="answer-text" style="display:none"></div></div>';
-            circles.length = 0;
-            
-            // Mobilde daire yarıçapını konteynır boyutuna göre hesapla
-            const rect = container.getBoundingClientRect();
-            const radius = (rect.width / 2) - 20; 
-            const total = data.length;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+            const container = document.getElementById('game-container');
+            // Önceki harfleri temizle (Merkez panel hariç)
+            const oldLetters = container.querySelectorAll('.letter-circle');
+            oldLetters.forEach(l => l.remove());
+
+            const radius = container.offsetWidth / 2 - 25; 
+            const centerX = container.offsetWidth / 2;
+            const centerY = container.offsetHeight / 2;
 
             data.forEach((item, index) => {
-                const angle = (index * (360 / total)) - 90;
+                const angle = (index * (360 / data.length)) - 90;
                 const radian = angle * (Math.PI / 180);
                 const x = centerX + radius * Math.cos(radian);
                 const y = centerY + radius * Math.sin(radian);
 
                 const div = document.createElement('div');
                 div.className = 'letter-circle';
+                div.id = 'letter-' + index;
                 div.innerText = item.letter;
-                // Mobilde tam ortalamak için
-                div.style.left = `${x - 15}px`;
-                div.style.top = `${y - 15}px`;
+                div.style.left = (x - 16) + 'px';
+                div.style.top = (y - 16) + 'px';
                 container.appendChild(div);
-                circles.push(div);
             });
         }
 
-        // nextStep, resetGame, endGame fonksiyonları senin orijinal mantığınla aynı kalabilir
-        // Sadece küçük bir UI güncellemesi:
         function nextStep() {
-            if (isGameFinished || !gameStarted) return;
             const qt = document.getElementById('question-text');
-            const mt = document.getElementById('main-text');
             const at = document.getElementById('answer-text');
+            const mt = document.getElementById('main-text');
+            const btn = document.getElementById('btn-action');
 
-            if (stepState === 0) {
+            if (stepState === 0) { // Soruya geç
                 currentIndex++;
-                if(currentIndex >= data.length) { endGame(); return; }
-                if (currentIndex > 0) { circles[currentIndex - 1].classList.add('correct'); }
-                circles[currentIndex].classList.add('active');
+                if (currentIndex >= data.length) { alert("Oyun Bitti!"); return; }
+                
+                // Harfi Aktif Yap
+                document.querySelectorAll('.letter-circle').forEach(l => l.classList.remove('active'));
+                document.getElementById('letter-' + currentIndex).classList.add('active');
+
                 mt.style.display = 'none';
                 qt.style.display = 'block';
-                qt.innerText = data[currentIndex].question;
                 at.style.display = 'none';
-                actionBtn.innerText = "Cevabı Gör";
+                qt.innerText = data[currentIndex].question;
+                btn.innerText = "Cevabı Gör";
                 stepState = 1;
-            } else {
+            } else { // Cevaba geç
                 at.style.display = 'block';
                 at.innerText = data[currentIndex].answer;
-                circles[currentIndex].classList.remove('active');
-                circles[currentIndex].classList.add('correct');
-                actionBtn.innerText = "Sıradaki Harf";
+                document.getElementById('letter-' + currentIndex).classList.add('correct');
+                btn.innerText = "Sıradaki Harf";
                 stepState = 0;
             }
         }
 
-        function returnToSplash() { location.reload(); }
-        function resetGame() { selectTheme(currentTheme); }
-        function endGame() { alert("Oyun Bitti!"); returnToSplash(); }
+        function resetGame() {
+            currentIndex = -1;
+            stepState = 0;
+            document.getElementById('main-text').style.display = 'block';
+            document.getElementById('question-text').style.display = 'none';
+            document.getElementById('answer-text').style.display = 'none';
+            document.getElementById('btn-action').innerText = "Oyuna Başla";
+            createBoard();
+        }
+
+        function endGame() {
+            alert("Oyun sonlandırıldı.");
+            location.reload();
+        }
     </script>
 </body>
 </html>
