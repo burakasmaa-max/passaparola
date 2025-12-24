@@ -7,7 +7,9 @@
     
     <link rel="icon" type="image/png" href="passaparola.png">
     <link rel="apple-touch-icon" href="passaparola.png">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap');
@@ -28,12 +30,12 @@
 
         body.splash-active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 
-        /* GİRİŞ EKRANI */
+        /* AÇILIŞ EKRANI */
         #splash-screen { text-align: center; padding: 20px; width: 100%; }
         .theme-btn { 
             background: white; color: #764ba2; padding: 18px; 
             margin: 8px; border-radius: 15px; font-weight: 800;
-            display: inline-block; width: 150px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: inline-block; width: 160px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             cursor: pointer;
         }
 
@@ -41,13 +43,12 @@
         #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: space-evenly; }
         #game-screen.active { display: flex; }
 
-        /* ÇARK ALANI */
         #circle-wrapper {
             position: relative;
-            width: 92vw;
-            height: 92vw;
-            max-width: 450px;
-            max-height: 450px;
+            width: 90vw;
+            height: 90vw;
+            max-width: 420px;
+            max-height: 420px;
             background: white;
             border-radius: 50%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -58,33 +59,31 @@
 
         .letter-circle {
             position: absolute;
-            width: 34px;
-            height: 34px;
+            width: 28px;
+            height: 28px;
             background: #dc143c;
             color: white;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: bold;
             border: 2px solid white;
             transition: all 0.3s ease;
             z-index: 10;
         }
 
-        .letter-circle.active { background: #ffd700; color: black; transform: scale(1.3); box-shadow: 0 0 15px #ffd700; z-index: 20; }
+        .letter-circle.active { background: #ffd700; color: black; transform: scale(1.4); box-shadow: 0 0 15px #ffd700; z-index: 20; }
         .letter-circle.correct { background: #4caf50; }
 
-        /* MERKEZ PANEL */
         #center-ui { width: 75%; text-align: center; z-index: 5; }
-        #status-text { font-size: 1.2rem; font-weight: 800; color: #2c3e50; }
-        #question-box { font-size: 0.9rem; background: #f8f9fa; padding: 12px; border-radius: 12px; border: 1px solid #ddd; display: none; line-height: 1.4; max-height: 140px; overflow-y: auto; }
-        #answer-box { font-size: 1.2rem; font-weight: bold; color: #d32f2f; margin-top: 8px; display: none; }
+        #status-text { font-size: 1.1rem; font-weight: 800; color: #2c3e50; }
+        #question-box { font-size: 0.85rem; background: #f8f9fa; padding: 10px; border-radius: 12px; border: 1px solid #ddd; display: none; line-height: 1.4; max-height: 120px; overflow-y: auto; }
+        #answer-box { font-size: 1.1rem; font-weight: bold; color: #d32f2f; margin-top: 5px; display: none; }
 
-        /* KONTROLLER */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 90%; max-width: 450px; padding-bottom: 10px; }
-        button { padding: 16px; border-radius: 25px; border: none; font-weight: bold; color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 90%; max-width: 420px; padding-bottom: 10px; }
+        button { padding: 14px; border-radius: 25px; border: none; font-weight: bold; color: white; cursor: pointer; }
         #main-btn { grid-column: span 2; background: #2196F3; font-size: 1.2rem; }
         #home-btn { background: #9C27B0; }
         #reset-btn { background: #FF9800; }
@@ -93,13 +92,13 @@
 <body class="splash-active">
 
     <div id="splash-screen">
-        <h1 style="color:white; margin-bottom:10px; font-size: 2.5rem;">Passaparola</h1>
-        <p style="color:white; margin-bottom: 30px;">Bir tema seçin</p>
+        <h1 style="color:white; margin-bottom:10px; font-size: 2.2rem;">Passaparola</h1>
+        <p style="color:white; margin-bottom: 25px;">Bir tema seçerek başlayın</p>
         <div id="theme-list"></div>
     </div>
 
     <div id="game-screen">
-        <h2 id="theme-title" style="color: #764ba2;"></h2>
+        <h2 id="theme-title" style="color: #764ba2; font-size: 1.2rem;"></h2>
         <div id="circle-wrapper">
             <div id="center-ui">
                 <h2 id="status-text">PASSAPAROLA</h2>
@@ -120,23 +119,62 @@
                 {l:"A", q:"İsmin eş anlamlısı nedir?", a:"AD"},
                 {l:"B", q:"Kitapların ödünç alındığı yer?", a:"KÜTÜPHANE"},
                 {l:"C", q:"Kelimelerin birleşmesiyle oluşan yapı?", a:"CÜMLE"},
-                {l:"D", q:"Dilin kurallarını inceleyen bilim?", a:"DİLBİLGİSİ"},
-                {l:"E", q:"Derslerde yapılan çalışmaların adı?", a:"ETKİNLİK"},
+                {l:"Ç", q:"Bir bitkinin toprak altındaki kısmı?", a:"KÖK"},
+                {l:"D", q:"Dil kurallarını inceleyen bilim?", a:"DİLBİLGİSİ"},
+                {l:"E", q:"Derslerde yapılan çalışmaların genel adı?", a:"ETKİNLİK"},
                 {l:"F", q:"Hayvanlara kişilik verilerek anlatılan masal?", a:"FABL"},
-                {l:"G", q:"Derslerde kullanılan resim ve tablolar?", a:"GÖRSEL"},
-                {l:"H", q:"Yaşanmış olayları anlatan yazı türü?", a:"HİKAYE"}
+                {l:"G", q:"Dilin en temel iletişim aracı?", a:"GÖRSEL/KONUŞMA"},
+                {l:"H", q:"Yaşanmış olayları anlatan kısa yazı türü?", a:"HİKAYE"},
+                {l:"I", q:"Sıcağın zıttı nedir?", a:"ILIK/SOĞUK"},
+                {l:"İ", q:"İsimlerin yerini tutan kelimeler?", a:"ZAMİR"},
+                {l:"J", q:"Haber toplayan ve sunan kişi?", a:"JURNALİST"},
+                {l:"K", q:"Cümleyi oluşturan her bir anlamlı parça?", a:"KELİME"},
+                {l:"L", q:"Dilin bir diğer adı nedir?", a:"LİSAN"},
+                {l:"M", q:"Duygu ve düşüncelerin aktarıldığı yazı türü?", a:"METİN"},
+                {l:"N", q:"İsim kelimesinin diğer adı?", a:"AD/NAM"},
+                {l:"O", q:"Öğrencilerin eğitim gördüğü yer?", a:"OKUL"},
+                {l:"Ö", q:"Bir metnin en önemli, temel cümlesi?", a:"ÖZET"},
+                {l:"P", q:"Zamanı planlamak için yapılan çizelge?", a:"PROGRAM"},
+                {l:"R", q:"Dizelerin sonundaki ses benzerliği?", a:"KAFİYE/REDF"},
+                {l:"S", q:"Cümlenin sonuna konulan nokta vb. işaretler?", a:"SEMBOL/NOKTA"},
+                {l:"Ş", q:"Duyguların mısralarla anlatıldığı tür?", a:"ŞİİR"},
+                {l:"T", q:"Gerçekleşmiş olayların anlatıldığı bilim?", a:"TARİH"},
+                {l:"U", q:"Yeryüzündeki yedi büyük kara parçasından her biri?", a:"KITA"},
+                {l:"Ü", q:"İsimden önce gelerek onu niteleyen sözcük?", a:"SIFAT"},
+                {l:"V", q:"Üzerinde yaşadığımız toprak parçası?", a:"VATAN"},
+                {l:"Y", q:"Dört temel beceriden biri, kalemi kullanma?", a:"YAZMA"},
+                {l:"Z", q:"Vakit kelimesinin eş anlamlısı?", a:"ZAMAN"}
             ],
             "Genel Kültür": [
                 {l:"A", q:"Türkiye'nin başkenti?", a:"ANKARA"},
                 {l:"B", q:"Dünyanın en büyük okyanusu?", a:"BÜYÜK OKYANUS"},
-                {l:"C", q:"Vücudumuzdaki en büyük organ?", a:"CİLT"},
-                {l:"D", q:"Güneş sistemindeki en büyük gezegen?", a:"JÜPİTER"}
+                {l:"C", q:"Vücudumuzun en büyük organı?", a:"CİLT"},
+                {l:"D", q:"Güneş sistemindeki en büyük gezegen?", a:"JÜPİTER"},
+                {l:"E", q:"Mısır'daki devasa mezar yapıları?", a:"PİRAMİT/EHRAM"},
+                {l:"F", q:"Futbol maçları kaç dakika sürer?", a:"DOKSAN"},
+                {l:"G", q:"Dünyanın uydusu nedir?", a:"AY/GÖK CİSMİ"},
+                {l:"H", q:"Su molekülündeki elementlerden biri?", a:"HİDROJEN"},
+                {l:"İ", q:"Türkiye'nin en kalabalık şehri?", a:"İSTANBUL"},
+                {l:"J", q:"Uzak doğu ülkesi Japonya'nın başkenti?", a:"TOKYO"},
+                {l:"K", q:"Kış mevsiminde yağan beyaz yağış türü?", a:"KAR"},
+                {l:"L", q:"İngiltere'nin başkenti?", a:"LONDRA"},
+                {l:"M", q:"Dünyanın en yüksek dağı?", a:"EVEREST"},
+                {l:"N", q:"Gece gökyüzünde parlayan cisimlerden her biri?", a:"YILDIZ"},
+                {l:"O", q:"Havadaki oksijeni sağlayan canlılar?", a:"AĞAÇ/ORMAN"},
+                {l:"P", q:"En ünlü ressamlardan biri (Pablo)?", a:"PICASSO"},
+                {l:"R", q:"Fransa'nın başkenti?", a:"PARİS"},
+                {l:"S", q:"Türkiye'nin milli marşının yazarı?", a:"MEHMET AKİF"},
+                {l:"T", q:"Türkiye Cumhuriyeti'nin kurucusu?", a:"ATATÜRK"},
+                {l:"U", q:"Gökyüzünde uçan hava taşıtı?", a:"UÇAK"},
+                {l:"V", q:"Işık veren teknolojik cihaz?", a:"LAMBA/AMPUL"},
+                {l:"Y", q:"Dünyayı ısıtan ve aydınlatan yıldız?", a:"GÜNEŞ"},
+                {l:"Z", q:"Afrika'da yaşayan çizgili hayvan?", a:"ZEBRA"}
             ]
         };
 
         let currentData = [];
         let currentIndex = -1;
-        let step = 0; // 0: soru bekle, 1: cevap bekle
+        let step = 0; 
 
         // Temaları listele
         const list = document.getElementById('theme-list');
@@ -154,24 +192,21 @@
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('game-screen').classList.add('active');
             document.getElementById('theme-title').innerText = "Tema: " + theme;
-            
             drawBoard();
         }
 
         function drawBoard() {
             const wrapper = document.getElementById('circle-wrapper');
-            // Eski harfleri temizle
             document.querySelectorAll('.letter-circle').forEach(l => l.remove());
 
             const rect = wrapper.getBoundingClientRect();
-            const radius = (rect.width / 2) - 25;
+            const radius = (rect.width / 2) - 20;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
             currentData.forEach((item, i) => {
                 const angle = (i * (360 / currentData.length)) - 90;
                 const radian = angle * (Math.PI / 180);
-                
                 const x = centerX + radius * Math.cos(radian);
                 const y = centerY + radius * Math.sin(radian);
 
@@ -179,11 +214,8 @@
                 div.className = 'letter-circle';
                 div.id = 'L-' + i;
                 div.innerText = item.l;
-                
-                // Tam ortalamak için (genişlik/2) çıkarıyoruz
-                div.style.left = (x - 17) + 'px';
-                div.style.top = (y - 17) + 'px';
-                
+                div.style.left = (x - 14) + 'px';
+                div.style.top = (y - 14) + 'px';
                 wrapper.appendChild(div);
             });
         }
@@ -196,7 +228,11 @@
 
             if (step === 0) {
                 currentIndex++;
-                if (currentIndex >= currentData.length) { alert("Tebrikler! Oyun bitti."); location.reload(); return; }
+                if (currentIndex >= currentData.length) { 
+                    alert("Tebrikler! Tüm sorular bitti."); 
+                    location.reload(); 
+                    return; 
+                }
                 
                 document.querySelectorAll('.letter-circle').forEach(l => l.classList.remove('active'));
                 document.getElementById('L-' + currentIndex).classList.add('active');
@@ -217,13 +253,9 @@
         }
 
         function resetGame() {
-            currentIndex = -1;
-            step = 0;
-            document.getElementById('status-text').style.display = 'block';
-            document.getElementById('question-box').style.display = 'none';
-            document.getElementById('answer-box').style.display = 'none';
-            document.getElementById('main-btn').innerText = "Oyuna Başla";
-            drawBoard();
+            if(confirm("Oyunu sıfırlamak istiyor musunuz?")) {
+                location.reload();
+            }
         }
     </script>
 </body>
