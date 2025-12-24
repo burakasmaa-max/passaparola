@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passaparola Oyunu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        body.splash-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body.game-active {
+            background: #ffffff;
+        }
+
+        /* AÇILIŞ EKRANI */
+        #splash-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            transition: opacity 0.5s ease;
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .splash-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .logo-container {
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .logo-image {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            animation: fadeIn 1.5s ease;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.3rem;
+            font-weight: 400;
+            margin-bottom: 50px;
+            animation: fadeIn 2s ease;
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+            animation: fadeInUp 1.5s ease;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .theme-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .theme-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .theme-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .theme-description {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+
+        /* OYUN EKRANI */
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #game-screen.active {
+            display: flex;
+        }
+
+        #theme-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        #game-container {
+            position: relative;
+            width: 750px;
+            height: 750px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .letter-circle {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background-color: #dc143c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.4s ease;
+            border: 3px solid #fff;
+            z-index: 5;
+        }
+
+        .letter-circle.active {
+            background-color: #ffd700;
+            color: black;
+            transform: scale(1.3);
+            z-index: 15;
+            box-shadow: 0 0 20px #ffd700;
+            border-color: #333;
+        }
+
+        .letter-circle.correct {
+            background-color: #4caf50;
+            color: white;
+            transform: scale(1);
+            border-color: #fff;
+        }
+
+        #center-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 65%;
+            text-align: center;
+            z-index: 1;
+        }
+
+        #main-text {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #question-text {
+            font-family: 'Roboto', Arial, sans-serif;
+            font-size: 1.7rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            line-height: 1.6;
+            letter-spacing: 0.3px;
+        }
+
+        #answer-text {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #d32f2f;
+            margin-top: 20px;
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #d32f2f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            z-index: 100;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.25);
+        }
+
+        #btn-home { background-color: #9C27B0; color: white; }
+        #btn-action { background-color: #2196F3; color: white; min-width: 160px; }
+        #btn-reset { background-color: #FF9800; color: white; }
+        #btn-end { background-color: #F44336; color: white; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .logo-image {
+                width: 200px;
+                height: 200px;
+            }
+
+            .welcome-text {
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .themes-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .theme-card {
+                padding: 20px 15px;
+            }
+
+            .theme-icon {
+                font-size: 2rem;
+            }
+
+            .theme-name {
+                font-size: 1rem;
+            }
+
+            .theme-description {
+                font-size: 0.8rem;
+            }
+
+            #game-container { width: 600px; height: 600px; }
+            #main-text { font-size: 2.5rem; }
+            .letter-circle { width: 45px; height: 45px; font-size: 1.1rem; }
+            #question-text { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body class="splash-active">
+
+    <!-- AÇILIŞ EKRANI -->
+    <div id="splash-screen">
+        <div class="splash-container">
+            <div class="logo-container">
+                <img src="https://cdn.abacus.ai/images/fba8a2af-883d-416b-a167-442aedd02623.png" alt="Passaparola Logo" class="logo-image">
+            </div>
+
+            <h1 class="welcome-text">Passaparola'ya Hoş Geldiniz!</h1>
+            <p class="subtitle">Bir tema seçerek oyuna başlayın</p>
+
+            <div class="themes-grid">
+                <div class="theme-card" onclick="selectTheme('Medya Okuryazarlığı')">
+                    <div class="theme-icon">📱</div>
+                    <div class="theme-name">Medya Okuryazarlığı</div>
+                    <div class="theme-description">Dijital dünya ve medya bilgisi</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Türkçe')">
+                    <div class="theme-icon">📚</div>
+                    <div class="theme-name">Türkçe</div>
+                    <div class="theme-description">Dil bilgisi ve edebiyat</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Atatürk ve Milli Mücadele')">
+                    <div class="theme-icon">🇹🇷</div>
+                    <div class="theme-name">Atatürk ve Milli Mücadele</div>
+                    <div class="theme-description">Atatürk ve Kurtuluş Savaşı</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Türkiye')">
+                    <div class="theme-icon">🏛️</div>
+                    <div class="theme-name">Türkiye</div>
+                    <div class="theme-description">Türkiye coğrafyası ve kültürü</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Tarih')">
+                    <div class="theme-icon">⏳</div>
+                    <div class="theme-name">Tarih</div>
+                    <div class="theme-description">Dünya tarihi ve medeniyetler</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Dünya')">
+                    <div class="theme-icon">🌍</div>
+                    <div class="theme-name">Dünya</div>
+                    <div class="theme-description">Dünya coğrafyası ve kültürleri</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Oyunlar')">
+                    <div class="theme-icon">🎮</div>
+                    <div class="theme-name">Oyunlar</div>
+                    <div class="theme-description">Spor ve oyun kültürü</div>
+                </div>
+
+                <div class="theme-card" onclick="selectTheme('Genel Kültür')">
+                    <div class="theme-icon">💡</div>
+                    <div class="theme-name">Genel Kültür</div>
+                    <div class="theme-description">Çeşitli konularda bilgi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OYUN EKRANI -->
+    <div id="game-screen">
+        <div id="theme-display"></div>
+        <div id="game-container"></div>
+        <div class="button-group">
+            <button id="btn-home" onclick="returnToSplash()">Anasayfa</button>
+            <button id="btn-action" onclick="nextStep()">Oyuna Başla</button>
+            <button id="btn-reset" onclick="resetGame()">Başa Dön</button>
+            <button id="btn-end" onclick="endGame()">Oyunu Bitir</button>
+        </div>
+    </div>
+
+    <script>
+        // TEMA VERİ TABANI
+        const themeDatabase = {
+            "Medya Okuryazarlığı": [
+                { letter: "A", question: "Televizyon programlarının içeriği hakkında izleyicilere bilgi veren, yaş ve içerik sembollerinden oluşan sistem.", answer: "AKILLI İŞARETLER" },
+                { letter: "B", question: "Teknolojik cihazların veya internetin aşırı ve kontrolsüz kullanımı sonucu ortaya çıkan, kişinin onsuz yapamaması durumu.", answer: "BAĞIMLILIK" },
+                { letter: "C", question: "Bilgisayar veya telefonlara kullanıcının izni olmadan sızan, bilgi çalan kötü amaçlı yazılımların genel adı.", answer: "CASUS YAZILIM" },
+                { letter: "Ç", question: "İnternet sitelerine girdiğimizde tarayıcıya kaydedilen ve dijital ayak izimizi oluşturan küçük veri dosyaları.", answer: "ÇEREZLER" },
+                { letter: "D", question: "Üst konumdaki bir otoriteden (devlet, lider, kurum vb.) aşağıdaki bireylere yönelik bir mesaj aktarımı.", answer: "DİKEY PROPAGANDA" },
+                { letter: "E", question: "Medyanın insanları güldürmek, hoşça vakit geçirtmek ve rahatlatmak için üstlendiği işlev.", answer: "EĞLENCE" },
+                { letter: "F", question: "Sosyal medyada sadece kendi görüşümüze yakın içerikleri görmemize neden olan algoritma etkisi (Fanusu).", answer: "FİLTRE BALONCUĞU" },
+                { letter: "G", question: "İnternet ortamında kişisel verilerimizi korumak ve tehlikelerden uzak durmak için almamız gereken önlemler bütünü.", answer: "GÜVENLİK" },
+                { letter: "H", question: "Toplumda yaşanan güncel olaylar hakkında bilgi veren medya metinleri.", answer: "HABER" },
+                { letter: "I", question: "Bireyleri; dini, dili, rengi veya milliyeti nedeniyle aşağılayan, medya etiğine aykırı tutum.", answer: "IRKÇILIK" },
+                { letter: "İ", question: "Duygu, düşünce veya bilgilerin akla gelebilecek her türlü yolla başkalarına aktarılması süreci.", answer: "İLETİŞİM" },
+                { letter: "J", question: "Teknolojiyle doğup büyüyen Z kuşağı gibi, benzer yaş grubundaki insan topluluğu.", answer: "JENERASYON" },
+                { letter: "K", question: "Gazete, TV, radyo ve internet gibi haber ve bilginin geniş kitlelere ulaşmasını sağlayan araçların genel adı.", answer: "KİTLE İLETİŞİM ARAÇLARI" },
+                { letter: "L", question: "Sosyal medyada bir kişiye karşı toplu halde yapılan sözlü saldırı ve baskı girişimi.", answer: "LİNÇ" },
+                { letter: "M", question: "İnsanları kendi istekleri dışında, fark ettirmeden etkileme ve yönlendirme sanatı.", answer: "MANİPÜLASYON" },
+                { letter: "N", question: "İnternet ortamında uyulması gereken görgü kuralları ve nezaket.", answer: "NETİKET" },
+                { letter: "O", question: "Bir haberi veya bilgiyi paylaşmadan önce doğruluğunu araştırma, teyit etme işlemi.", answer: "ONAYLAMA" },
+                { letter: "Ö", question: "Bir olay veya kişi hakkında yeterince bilgiye sahip olmadan peşin hüküm verme durumu; medyada kaçınılması gereken bir tutum.", answer: "ÖNYARGI" },
+                { letter: "P", question: "Bir fikri, ideolojiyi veya davranışı topluma benimsetmek amacıyla yapılan sistemli ikna çalışmaları.", answer: "PROPAGANDA" },
+                { letter: "R", question: "Türkiye'de radyo, televizyon ve internet yayınlarını denetleyen ve düzenleyen üst kurulun kısa adı.", answer: "RTÜK" },
+                { letter: "S", question: "Bireylerin çoğunluğa uyması gerektiği fikrinin yaratılması, popülerlik hissinin aşılanması durumu.", answer: "SÜRÜYE UYMA" },
+                { letter: "Ş", question: "Bir kişinin veya grubun kendi ülkesine, dinine, kültürüne olan aşırı bağlılığını ve üstünlük duygusunu vurgulayan bir propaganda tekniği.", answer: "ŞOVENLİK" },
+                { letter: "T", question: "Bir bilgi veya haberin doğruluğunu güvenilir kaynaklardan kontrol etme işlemi.", answer: "TEYİT" },
+                { letter: "U", question: "Kişilerin internetteki geçmişte kalmış, kendilerini rahatsız eden haber veya fotoğrafların silinmesini isteme hakkı.", answer: "UNUTULMA HAKKI" },
+                { letter: "Ü", question: "Film veya dizilerde senaryo gereğiymiş gibi gösterilen, aslında bir markanın tanıtımının yapıldığı teknik.", answer: "ÜRÜN YERLEŞTİRME" },
+                { letter: "Y", question: "Doğru olmadığı halde, insanları kandırmak veya yönlendirmek amacıyla kurgulanmış asılsız haberler.", answer: "YALAN HABER" },
+                { letter: "Z", question: "Güçlü olanın zayıf olanı sürekli olarak rahatsız etmesi durumu.", answer: "ZORBALIK" }
+            ],
+            "Türkçe": [
+                { letter: "A", question: "İsmin eş anlamlısı.", answer: "AD" },
+                { letter: "B", question: "Bir ana cümle ile onun anlamını tamamlayan bir veya daha fazla yardımcı cümleden meydana gelen cümle türü.", answer: "BİRLEŞİK" },
+                { letter: "C", question: "Dilin en küçük anlamlı birimi olan sözcüklerin oluşturduğu yapı.", answer: "CÜMLE" },
+                { letter: "Ç", question: "Bir metni öğretimde anlamına göre parçalara ayırma süreci.", answer: "ÇÖZÜMLEME" },
+                { letter: "D", question: "Ölçme değerlendirme sürecinin ikinci basamağı.", answer: "DEĞERLENDİRME" },
+                { letter: "E", question: "Derslerde yapılan çalışmalara verilen genel ad.", answer: "ETKİNLİK" },
+                { letter: "F", question: "Hayvanlara kişilik verilerek yazılan kısa hikâyeler.", answer: "FABL" },
+                { letter: "G", question: "Derslerde resim, şema, tablo gibi araçların genel adı.", answer: "GÖRSEL MATERYAL" },
+                { letter: "H", question: "Türkçe öğretiminde metin türlerinden biri.", answer: "HİKAYE" },
+                { letter: "I", question: "Yazım kılavuzu.", answer: "İMLA" },
+                { letter: "İ", question: "Kural dışılık.", answer: "İSTİSNA" },
+                { letter: "J", question: "Aynı meslek veya topluluktaki insanların ortak dilden ayrı olarak kullandıkları özel dil veya söz dağarcığı.", answer: "JARGON" },
+                { letter: "K", question: "Bir veya birkaç heceden oluşan, anlamlı ses birliği; söz, sözcük, lügat.", answer: "KELİME" },
+                { letter: "L", question: "Bir sporcunun resmî yarışmalara katılabilmesi için spor federasyonunun kendisine verdiği kayıt fişi veya kimlik kartı.", answer: "LİSANS" },
+                { letter: "M", question: "Karalama için kullanılan kâğıt.", answer: "MÜSVEDDE" },
+                { letter: "N", question: "Yazılı anlatımda yapılan yanlış türlerinden biri.", answer: "NOKTALAMA HATASI" },
+                { letter: "O", question: "Dersi eğlenceli hale getirme ve öğrenci motivasyonunu artırma amacıyla yapılan bir işlem.", answer: "OYUNLAŞTIRMA" },
+                { letter: "Ö", question: "Eğitim-öğretim sürecinin başında, içinde veya sonunda yapılan değerlendirme süreci.", answer: "ÖLÇME" },
+                { letter: "P", question: "Ders için yapılan hazırlığa verilen ad.", answer: "PLAN" },
+                { letter: "R", question: "Tutunamayanlar, Kürk Mantolu Madonna, Saatleri Ayarlama Enstitüsü vb. eserleri tanımlayan bir edebi metin türü.", answer: "ROMAN" },
+                { letter: "S", question: "Yaygın olarak kullanılan bir okuma türü.", answer: "SESLİ OKUMA" },
+                { letter: "Ş", question: "Edebi (Sanatsal) metin türlerinden biri.", answer: "ŞİİR" },
+                { letter: "T", question: "Öğretimde kullanılan kısa sınav türü.", answer: "TEST" },
+                { letter: "U", question: "Öğretimde yüz yüze eğitime alternatif olarak sunulan öğretim biçimi.", answer: "UZAKTAN" },
+                { letter: "Ü", question: "Türkçe'de sesli harfleri tanımlamak için kullanılan bir kelime.", answer: "ÜNLÜ HARFLER" },
+                { letter: "V", question: "Banka vb. kurum ve kuruluşlarda para alınıp verilen yer.", answer: "VEZNE" },
+                { letter: "Y", question: "Dört temel dil becerisinden biri.", answer: "YAZMA" },
+                { letter: "Z", question: "Türkçe'de isimlerin yerine kullanılan sözcük türü.", answer: "ZAMİR" }
+            ],
+            "Atatürk ve Milli Mücadele": [
+                { letter: "A", question: "Mustafa Kemal'e matematik öğretmeni tarafından verilen ad.", answer: "ATATÜRK" },
+                { letter: "B", question: "Milli Mücadele'nin kazanıldığı en önemli savaşlardan biri, Başkomutan Meydan Muharebesi olarak da bilinir.", answer: "BÜYÜK TAARRUZ" },
+                { letter: "C", question: "Atatürk'ün kurduğu Türkiye Cumhuriyeti'nin temel yönetim şekli.", answer: "CUMHURİYET" },
+                { letter: "Ç", question: "Milli Mücadele'nin en zorlu deniz ve kara savunmalarından biri, 'Geçilemez' denilen yer.", answer: "ÇANAKKALE" },
+                { letter: "D", question: "Atatürk'ün 'Ordular, ilk hedefiniz Akdeniz'dir. İleri!' emrini verdiği meydan muharebesi.", answer: "DUMLUPINAR" },
+                { letter: "E", question: "1919'da Doğu illerinin temsilcilerinin toplandığı, bölgesel başlayıp ulusal kararlar alınan kongre.", answer: "ERZURUM KONGRESİ" },
+                { letter: "F", question: "Milli Mücadele'nin tek mareşali ve Atatürk'ün en yakın silah arkadaşı.", answer: "FEVZİ ÇAKMAK" },
+                { letter: "G", question: "Atatürk'ün bizzat yazdığı, belirli bir konudaki terimleri Türkçeleştiren eserin alanı.", answer: "GEOMETRİ" },
+                { letter: "H", question: "'Hatt-ı müdafaa yoktur, sath-ı müdafaa vardır' sözünü tamamlayan kelime.", answer: "HATT-I MÜDAFAA" },
+                { letter: "I", question: "Batı Cephesi'nde Yunanlılara karşı kazanılan ilk düzenli ordu zaferlerinin yaşandığı yer.", answer: "I. İNÖNÜ ZAFERİ" },
+                { letter: "İ", question: "Atatürk'ün en yakın arkadaşı, Lozan temsilcisi ve Türkiye'nin ikinci Cumhurbaşkanı.", answer: "İSMET İNÖNÜ" },
+                { letter: "J", question: "Milli Mücadele döneminde asayişi sağlamakla görevli olan askeri kolluk birimi.", answer: "JANDARMA" },
+                { letter: "K", question: "Ülke bütünlüğünü korumak, ulusal egemenliğe dayalı, tam bağımsız yeni bir Türk devleti kurmak için tüm ulusça girişilen, çok cepheli bir savaşın adı.", answer: "KURTULUŞ SAVAŞI" },
+                { letter: "L", question: "Milli Mücadele'nin siyasi zaferi sayılan, Türkiye'nin tapusu niteliğindeki anlaşma.", answer: "LOZAN BARIŞ ANTLAŞMASI" },
+                { letter: "M", question: "Atatürk'ün 1934'ten önce kullandığı asıl adı.", answer: "MUSTAFA" },
+                { letter: "N", question: "Atatürk'ün 1919-1927 yıllarını anlattığı en büyük eseri.", answer: "NUTUK" },
+                { letter: "O", question: "Bir milletin başka bir devletin boyunduruğu altında kalmadan yaşaması, bağımsızlık durumu.", answer: "ÖZGÜRLÜK" },
+                { letter: "Ö", question: "Atatürk'ün 'En büyük eserimdir' dediği yapının (Cumhuriyet) temel taşı.", answer: "ÜLKE BÜTÜNLÜĞÜ" },
+                { letter: "P", question: "Ordunun en üst rütbeli komutanlarına verilen ad.", answer: "PAŞA" },
+                { letter: "R", question: "Atatürk'ün en yakın silah arkadaşlarından biri olan, Amasya Genelgesi'nde imzası bulunan ve Hamidiye Kahramanı olarak bilinen devlet adamı.", answer: "RAUF ORBAY" },
+                { letter: "S", question: "Atatürk'ün doğduğu, bugün Yunanistan sınırlarında kalan şehir.", answer: "SELANİK" },
+                { letter: "Ş", question: "Milli Mücadele sırasında Fransızlara karşı gösterdiği dirençle 'Şanlı' unvanını alan ilimiz.", answer: "ŞANLIURFA" },
+                { letter: "T", question: "Milli Mücadele'nin başlangıç noktası sayılan, Atatürk'ün 19 Mayıs 1919'da çıktığı şehir.", answer: "TRABZON" },
+                { letter: "U", question: "Milli Mücadele'nin dayandığı, milletin kendi geleceğine kendisinin karar vermesi ilkesi.", answer: "ULUSAL EGEMENLİK" },
+                { letter: "Ü", question: "Üzerinde doğup büyüdüğümüz, uğrunda Milli Mücadele'yi verdiğimiz kutsal toprak parçası.", answer: "ÜLKE" },
+                { letter: "V", question: "Üzerinde doğup büyüdüğümüz, uğrunda Milli Mücadele'yi verdiğimiz kutsal toprak parçası.", answer: "VATAN" },
+                { letter: "Y", question: "Bir milletin boyunduruk altında yaşamaması, özgür olması durumu için söylenen ünlü söz.", answer: "YA İSTİKLAL YA ÖLÜM" },
+                { letter: "Z", question: "Atatürk'ün annesinin adı.", answer: "ZÜBEYDE HANIM" }
+            ],
+            "Türkiye": [
+                { letter: "A", question: "Türkiye'nin başkenti.", answer: "ANKARA" },
+                { letter: "B", question: "Türkiye'nin en büyük gölü.", answer: "VAN GÖLÜ" },
+                { letter: "C", question: "Türkiye'nin Marmara bölgesindeki önemli bir ili.", answer: "ÇANAKKALE" },
+                { letter: "Ç", question: "Türkiye'nin Marmara bölgesindeki tarihi bir ili.", answer: "ÇANAKKALE" },
+                { letter: "D", question: "Türkiye'nin Doğu Anadolu'daki önemli bir ili.", answer: "DİYARBAKIR" },
+                { letter: "E", question: "Türkiye'nin Ege bölgesindeki önemli bir ili.", answer: "EDİRNE" },
+                { letter: "F", question: "Türkiye'nin Karadeniz kıyısındaki bir ili.", answer: "FİLİBE" },
+                { letter: "G", question: "Türkiye'nin Güneydoğu Anadolu'daki önemli bir ili.", answer: "GAZİANTEP" },
+                { letter: "H", question: "Türkiye'nin Akdeniz kıyısındaki bir ili.", answer: "HATAY" },
+                { letter: "I", question: "Türkiye'nin Doğu Anadolu'daki bir ili.", answer: "IĞDIR" },
+                { letter: "İ", question: "Türkiye'nin en kalabalık şehri.", answer: "İSTANBUL" },
+                { letter: "J", question: "Türkiye'nin jeotermal kaynaklarıyla ünlü bölgesi.", answer: "JANDARMA" },
+                { letter: "K", question: "Türkiye'nin Karadeniz bölgesindeki bir ili.", answer: "KASTAMONU" },
+                { letter: "L", question: "Türkiye'nin Akdeniz kıyısındaki bir ili.", answer: "LEFKOŞA" },
+                { letter: "M", question: "Türkiye'nin Ege bölgesindeki önemli bir ili.", answer: "MANİSA" },
+                { letter: "N", question: "Türkiye'nin İç Anadolu'daki önemli bir ili.", answer: "NEVŞEHİR" },
+                { letter: "O", question: "Türkiye'nin Karadeniz bölgesindeki bir ili.", answer: "ORDU" },
+                { letter: "Ö", question: "Türkiye'nin meşhur bir yöresel yemeği.", answer: "ÖRDEK" },
+                { letter: "P", question: "Türkiye'nin Ege bölgesindeki antik bir şehir.", answer: "PAMUKKALE" },
+                { letter: "R", question: "Türkiye'nin Karadeniz bölgesindeki önemli bir ili.", answer: "RİZE" },
+                { letter: "S", question: "Türkiye'nin Karadeniz kıyısındaki önemli bir ili.", answer: "SAMSUN" },
+                { letter: "Ş", question: "Türkiye'nin Güneydoğu Anadolu'daki önemli bir ili.", answer: "ŞANLIURFA" },
+                { letter: "T", question: "Türkiye'nin Karadeniz bölgesindeki önemli bir ili.", answer: "TRABZON" },
+                { letter: "U", question: "Türkiye'nin Ege bölgesindeki bir ili.", answer: "UŞAK" },
+                { letter: "Ü", question: "Türkiye'nin meşhur bir yöresel ürünü.", answer: "ÜZÜM" },
+                { letter: "V", question: "Türkiye'nin Doğu Anadolu'daki önemli bir ili.", answer: "VAN" },
+                { letter: "Y", question: "Türkiye'nin Marmara bölgesindeki bir ili.", answer: "YALOVA" },
+                { letter: "Z", question: "Türkiye'nin Karadeniz bölgesindeki önemli bir ili.", answer: "ZONGULDAK" }
+            ],
+            "Tarih": [
+                { letter: "A", question: "Anadolu'nun ilk büyük medeniyeti.", answer: "ANADOLU" },
+                { letter: "B", question: "Bizans İmparatorluğu'nun başkenti.", answer: "BİZANS" },
+                { letter: "C", question: "Cengiz Han'ın kurduğu imparatorluk.", answer: "CENGİZ" },
+                { letter: "Ç", question: "Çanakkale Savaşı'nın yapıldığı yıl.", answer: "ÇANAKKALE" },
+                { letter: "D", question: "Dünya'nın en eski medeniyetlerinden biri.", answer: "DİCLE" },
+                { letter: "E", question: "Eski Mısır'ın piramitleri.", answer: "EHRAM" },
+                { letter: "F", question: "Fransız İhtilali'nin başladığı yıl.", answer: "FRANSA" },
+                { letter: "G", question: "Galya savaşlarını kazanan Roma generali.", answer: "GALYA" },
+                { letter: "H", question: "Hitit İmparatorluğu'nun merkezi.", answer: "HİTİT" },
+                { letter: "I", question: "İlk Çağ'da yaşayan medeniyetler.", answer: "ILKÇAĞ" },
+                { letter: "İ", question: "İstanbul'un fethi.", answer: "İSTANBUL" },
+                { letter: "J", question: "Japon İmparatorluğu'nun tarihi.", answer: "JAPON" },
+                { letter: "K", question: "Kurtuluş Savaşı'nın başladığı yıl.", answer: "KURTULUŞ" },
+                { letter: "L", question: "Lozan Antlaşması'nın imzalandığı yıl.", answer: "LOZAN" },
+                { letter: "M", question: "Milli Mücadele'nin başladığı yer.", answer: "MİLLİ" },
+                { letter: "N", question: "Napolyon'un Avrupa'yı fethi.", answer: "NAPOLYON" },
+                { letter: "O", question: "Osmanlı İmparatorluğu'nun kuruluşu.", answer: "OSMANLI" },
+                { letter: "Ö", question: "Ömer Hayyam'ın yaşadığı dönem.", answer: "ÖMER" },
+                { letter: "P", question: "Persler'in Yunanistan'a saldırısı.", answer: "PERS" },
+                { letter: "R", question: "Roma İmparatorluğu'nun kuruluşu.", answer: "ROMA" },
+                { letter: "S", question: "Selçuklu Devleti'nin kuruluşu.", answer: "SELÇUKLU" },
+                { letter: "Ş", question: "Şah İsmail'in Safevi Devleti'ni kurması.", answer: "ŞAH" },
+                { letter: "T", question: "Türklerin İslamiyet'i kabul etmesi.", answer: "TÜRK" },
+                { letter: "U", question: "Uygur Türklerinin tarihi.", answer: "UYGUR" },
+                { letter: "Ü", question: "Üç İmparatorluk dönemi.", answer: "ÜÇ" },
+                { letter: "V", question: "Viyana Kuşatması'nın yapıldığı yıl.", answer: "VİYANA" },
+                { letter: "Y", question: "Yeniçeri Ocağı'nın kaldırılması.", answer: "YENİÇERİ" },
+                { letter: "Z", question: "Ziya Gökalp'in Türkçülük akımı.", answer: "ZİYA" }
+            ],
+            "Dünya": [
+                { letter: "A", question: "Dünyanın en büyük kıtası.", answer: "ASYA" },
+                { letter: "B", question: "Brezilya'nın başkenti.", answer: "BREZİLYA" },
+                { letter: "C", question: "Çin'in başkenti.", answer: "ÇİN" },
+                { letter: "Ç", question: "Çek Cumhuriyeti'nin başkenti.", answer: "ÇEK" },
+                { letter: "D", question: "Danimarka'nın başkenti.", answer: "DANİMARKA" },
+                { letter: "E", question: "Ekvator çizgisinin geçtiği kıta.", answer: "EKVATOR" },
+                { letter: "F", question: "Fransa'nın başkenti.", answer: "FRANSA" },
+                { letter: "G", question: "Güney Afrika'nın başkenti.", answer: "GÜNEY AFRİKA" },
+                { letter: "H", question: "Hindistan'ın başkenti.", answer: "HİNDİSTAN" },
+                { letter: "I", question: "Irak'ın başkenti.", answer: "IRAK" },
+                { letter: "İ", question: "İspanya'nın başkenti.", answer: "İSPANYA" },
+                { letter: "J", question: "Japonya'nın başkenti.", answer: "JAPONYA" },
+                { letter: "K", question: "Kanada'nın başkenti.", answer: "KANADA" },
+                { letter: "L", question: "Londra'nın bulunduğu ülke.", answer: "LONDRA" },
+                { letter: "M", question: "Meksika'nın başkenti.", answer: "MEKSİKA" },
+                { letter: "N", question: "Norveç'in başkenti.", answer: "NORVEÇ" },
+                { letter: "O", question: "Okyanusya kıtasının en büyük ülkesi.", answer: "OKYANUSYA" },
+                { letter: "Ö", question: "Özbekistan'ın başkenti.", answer: "ÖZBEKİSTAN" },
+                { letter: "P", question: "Portekiz'in başkenti.", answer: "PORTEKİZ" },
+                { letter: "R", question: "Rusya'nın başkenti.", answer: "RUSYA" },
+                { letter: "S", question: "Suriye'nin başkenti.", answer: "SURİYE" },
+                { letter: "Ş", question: "Şili'nin başkenti.", answer: "ŞİLİ" },
+                { letter: "T", question: "Tayland'ın başkenti.", answer: "TAYLAND" },
+                { letter: "U", question: "Ukrayna'nın başkenti.", answer: "UKRAYNA" },
+                { letter: "Ü", question: "Ürdün'ün başkenti.", answer: "ÜRDÜN" },
+                { letter: "V", question: "Vietnam'ın başkenti.", answer: "VİETNAM" },
+                { letter: "Y", question: "Yunanistan'ın başkenti.", answer: "YUNANİSTAN" },
+                { letter: "Z", question: "Zimbabve'nin başkenti.", answer: "ZİMBABVE" }
+            ],
+            "Oyunlar": [
+                { letter: "A", question: "Tahtada oynanan stratejik bir oyun.", answer: "ATAK" },
+                { letter: "B", question: "Topla oynanan popüler bir takım oyunu.", answer: "BASKETBOL" },
+                { letter: "C", question: "Kağıt destesiyle oynanan bir oyun.", answer: "CANAK" },
+                { letter: "Ç", question: "Çocukların bahçede oynadığı bir oyun.", answer: "ÇELIK" },
+                { letter: "D", question: "Zar atarak oynanan bir masa oyunu.", answer: "DAMA" },
+                { letter: "E", question: "Elektronik cihazlarda oynanan oyunlar.", answer: "ELEKTRONİK" },
+                { letter: "F", question: "Topla oynanan dünya çapında popüler bir oyun.", answer: "FUTBOL" },
+                { letter: "G", question: "Tahtada oynanan Japon kökenli bir oyun.", answer: "GO" },
+                { letter: "H", question: "Kelime tahmin oyunu.", answer: "HANGMAN" },
+                { letter: "I", question: "Buz üzerinde oynanan bir oyun.", answer: "ICE" },
+                { letter: "İ", question: "İki kişinin oynaması gereken bir kart oyunu.", answer: "İKİLİ" },
+                { letter: "J", question: "Japon kökenli bir kart oyunu.", answer: "JANKEN" },
+                { letter: "K", question: "Tahtada oynanan klasik bir strateji oyunu.", answer: "KALE" },
+                { letter: "L", question: "Sayılarla oynanan bir şans oyunu.", answer: "LOTO" },
+                { letter: "M", question: "Monopoly oyununda kullanılan para birimi.", answer: "MONOPOLY" },
+                { letter: "N", question: "Dokuz taşla oynanan bir oyun.", answer: "NINE" },
+                { letter: "O", question: "Tahtada X ve O ile oynanan oyun.", answer: "OKS" },
+                { letter: "Ö", question: "Özel bir kart destesiyle oynanan oyun.", answer: "ÖZEL" },
+                { letter: "P", question: "Kelime bulmaca oyunu.", answer: "PUZZLE" },
+                { letter: "R", question: "Raket ve topla oynanan bir oyun.", answer: "RAKET" },
+                { letter: "S", question: "Tahtada oynanan klasik bir oyun.", answer: "SATRANÇ" },
+                { letter: "Ş", question: "Şans faktörünün önemli olduğu oyunlar.", answer: "ŞANS" },
+                { letter: "T", question: "Topla oynanan bir spor dalı.", answer: "TENİS" },
+                { letter: "U", question: "Uçurtma uçurma oyunu.", answer: "UÇURTMA" },
+                { letter: "Ü", question: "Üç taş oyunu.", answer: "ÜÇ" },
+                { letter: "V", question: "Voleybol oyununun kısa adı.", answer: "VOLEYBOL" },
+                { letter: "Y", question: "Yüzme havuzunda oynanan bir oyun.", answer: "YÜZME" },
+                { letter: "Z", question: "Zeka gerektiren bulmaca oyunları.", answer: "ZEKA" }
+            ],
+            "Genel Kültür": [
+                { letter: "A", question: "Dünyanın en büyük okyanusu.", answer: "ATLAS" },
+                { letter: "B", question: "Fransa'nın başkenti.", answer: "PARİS" },
+                { letter: "C", question: "İnsanın vücudundaki en büyük organ.", answer: "CİLT" },
+                { letter: "Ç", question: "Türkiye'nin en uzun nehri.", answer: "ÇORUH" },
+                { letter: "D", question: "Güneş sistemindeki gezegenlerin merkezinde bulunan yıldız.", answer: "DÜNYA" },
+                { letter: "E", question: "Mısır'da bulunan ünlü antik yapılar.", answer: "EHRAMlar" },
+                { letter: "F", question: "Işığın hızı saniyede kaç kilometre?", answer: "FOTONIK" },
+                { letter: "G", question: "Türkiye'nin en kalabalık şehri.", answer: "GAZİANTEP" },
+                { letter: "H", question: "Su molekülünün kimyasal formülü.", answer: "HIDROJEN" },
+                { letter: "I", question: "Dünya üzerindeki en büyük çöl.", answer: "IRAK" },
+                { letter: "İ", question: "Türkiye'nin ikinci büyük şehri.", answer: "İSTANBUL" },
+                { letter: "J", question: "Japonya'nın başkenti.", answer: "JAPONYA" },
+                { letter: "K", question: "Türkiye'nin başkenti.", answer: "KARA" },
+                { letter: "L", question: "İngiltere'nin başkenti.", answer: "LONDRA" },
+                { letter: "M", question: "Ay'a ilk ayak basan astronot.", answer: "MOON" },
+                { letter: "N", question: "Norveç'in başkenti.", answer: "NORVEÇ" },
+                { letter: "O", question: "Türkiye'nin en büyük gölü.", answer: "ORTA" },
+                { letter: "Ö", question: "Türkiye'de yetişen bir meyve türü.", answer: "ÖĞLE" },
+                { letter: "P", question: "Dünya'nın en büyük adası.", answer: "PASİFİK" },
+                { letter: "R", question: "Rusya'nın başkenti.", answer: "RUSYA" },
+                { letter: "S", question: "Güneş sistemindeki en büyük gezegen.", answer: "SATÜRN" },
+                { letter: "Ş", question: "Türkiye'nin en yüksek dağı.", answer: "ŞANLIURFA" },
+                { letter: "T", question: "Türkiye'nin milli içeceği.", answer: "TÜRK" },
+                { letter: "U", question: "Dünya'nın en uzun nehri.", answer: "UKRAYNA" },
+                { letter: "Ü", question: "Türkiye'nin üç tarafı denizlerle çevrili yarımadası.", answer: "ÜLKE" },
+                { letter: "V", question: "Venedik'in bulunduğu ülke.", answer: "VENEDİK" },
+                { letter: "Y", question: "Türkiye'nin en eski medeniyetlerinden biri.", answer: "YUNAN" },
+                { letter: "Z", question: "Afrika'da yaşayan çizgili bir hayvan.", answer: "ZEBRA" }
+            ]
+        };
+
+        let currentTheme = "";
+        let data = [];
+        let currentIndex = -1;
+        let stepState = 0;
+        let isGameFinished = false;
+        let gameStarted = false;
+
+        const container = document.getElementById('game-container');
+        const actionBtn = document.getElementById('btn-action');
+        const circles = [];
+
+        // TEMA SEÇİMİ
+        function selectTheme(themeName) {
+            currentTheme = themeName;
+            data = themeDatabase[themeName];
+
+            setTimeout(() => {
+                document.getElementById('splash-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.add('active');
+                document.getElementById('theme-display').innerText = `Tema: ${currentTheme}`;
+                document.body.classList.remove('splash-active');
+                document.body.classList.add('game-active');
+                createBoard();
+                gameStarted = true;
+            }, 500);
+        }
+
+        function createBoard() {
+            const radius = 320;
+            const total = data.length;
+            const centerX = 375;
+            const centerY = 375;
+
+            container.innerHTML = '<div id="center-display"><div id="main-text">PASSAPAROLA</div><div id="question-text"></div><div id="answer-text"></div></div>';
+
+            data.forEach((item, index) => {
+                const angle = (index * (360 / total)) - 90;
+                const radian = angle * (Math.PI / 180);
+                const x = centerX + radius * Math.cos(radian);
+                const y = centerY + radius * Math.sin(radian);
+
+                const div = document.createElement('div');
+                div.className = 'letter-circle';
+                div.innerText = item.letter;
+                div.style.left = `${x - 27.5}px`;
+                div.style.top = `${y - 27.5}px`;
+                container.appendChild(div);
+                circles.push(div);
+            });
+        }
+
+        function updateUIElements() {
+             return {
+                 mt: document.getElementById('main-text'),
+                 qt: document.getElementById('question-text'),
+                 at: document.getElementById('answer-text')
+             }
+        }
+
+        function nextStep() {
+            if (isGameFinished || !gameStarted) return;
+            const els = updateUIElements();
+
+            if (currentIndex >= data.length) {
+                endGame();
+                return;
+            }
+
+            if (stepState === 0) {
+                currentIndex++;
+                if(currentIndex >= data.length) { endGame(); return; }
+                if (currentIndex > 0) {
+                    circles[currentIndex - 1].classList.remove('active');
+                    circles[currentIndex - 1].classList.add('correct');
+                }
+                circles[currentIndex].classList.add('active');
+                els.mt.style.display = 'none';
+                els.qt.style.display = 'block';
+                els.qt.innerText = data[currentIndex].question;
+                els.at.style.display = 'none';
+                actionBtn.innerText = "Cevabı Gör";
+                actionBtn.style.backgroundColor = "#9C27B0";
+                stepState = 1;
+            } else {
+                els.at.style.display = 'inline-block';
+                els.at.innerText = data[currentIndex].answer;
+                circles[currentIndex].classList.remove('active');
+                circles[currentIndex].classList.add('correct');
+                actionBtn.innerText = "Sıradaki Harf";
+                actionBtn.style.backgroundColor = "#2196F3";
+                stepState = 0;
+            }
+        }
+
+        function resetGame() {
+            currentIndex = -1;
+            stepState = 0;
+            isGameFinished = false;
+            circles.length = 0;
+            createBoard();
+            const els = updateUIElements();
+            els.mt.style.display = 'block';
+            els.mt.innerText = "PASSAPAROLA";
+            els.qt.style.display = 'none';
+            els.at.style.display = 'none';
+            actionBtn.innerText = "Oyuna Başla";
+            actionBtn.style.backgroundColor = "#2196F3";
+            actionBtn.disabled = false;
+            actionBtn.blur();
+        }
+
+        function endGame() {
+            isGameFinished = true;
+            const els = updateUIElements();
+            circles.forEach(c => {
+                c.classList.remove('active');
+                c.classList.add('correct');
+            });
+            els.mt.style.display = 'block';
+            els.mt.innerText = "OYUN BİTTİ!";
+            els.qt.style.display = 'none';
+            els.at.style.display = 'none';
+            actionBtn.innerText = "Oyun Bitti";
+            actionBtn.style.backgroundColor = "#7f8c8d";
+            actionBtn.disabled = true;
+
+            // Oyun bittiğinde açılış ekranına dön
+            setTimeout(() => {
+                if(confirm("Oyun bitti! Yeni tema seçmek ister misiniz?")) {
+                    returnToSplash();
+                }
+            }, 1000);
+        }
+
+        function returnToSplash() {
+            // Oyun durumunu sıfırla
+            currentIndex = -1;
+            stepState = 0;
+            isGameFinished = false;
+            gameStarted = false;
+            circles.length = 0;
+            currentTheme = "";
+            data = [];
+
+            // Ekranları değiştir
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('splash-screen').classList.remove('hidden');
+            
+            // Arka plan rengini değiştir
+            document.body.classList.remove('game-active');
+            document.body.classList.add('splash-active');
+
+            // Butonları sıfırla
+            actionBtn.innerText = "Oyuna Başla";
+            actionBtn.style.backgroundColor = "#2196F3";
+            actionBtn.disabled = false;
+        }
+
+        // TUŞ DİNLEYİCİSİ
+        document.addEventListener('keydown', function(event) {
+            const k = event.keyCode;
+
+            if (k === 34 || k === 39 || k === 40 || k === 32 || k === 13) {
+                if (k === 32 || k === 13) {
+                    if (document.activeElement.tagName !== "BUTTON") {
+                        event.preventDefault();
+                        if (gameStarted) {
+                            nextStep();
+                        }
+                    }
+                } else {
+                    event.preventDefault();
+                    if (gameStarted) nextStep();
+                }
+            }
+            else if (k === 33 || k === 37 || k === 8) {
+                event.preventDefault();
+                if (gameStarted) resetGame();
+            }
+        });
+    </script>
+</body>
+</html>
